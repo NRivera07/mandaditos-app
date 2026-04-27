@@ -1,6 +1,6 @@
 import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
 type LocationCoords = {
@@ -11,23 +11,40 @@ export default function App() {
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined
   );
+  const [selectedMandado, setSelectedMandado] = useState<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const mandados = location
     ? [
         {
           id: "1",
           descripcion: "Comprar medicina",
+          telefono: "8888-8888",
+          tipo: "farmacia",
           lat: location.latitude + 0.002,
           lng: location.longitude + 0.002,
         },
         {
           id: "2",
           descripcion: "Ir al banco",
+          telefono: "7777-7777",
+          tipo: "banco",
           lat: location.latitude - 0.002,
           lng: location.longitude - 0.001,
         },
       ]
     : [];
+
+  const getMandadoStyle = (tipo: string) => {
+    switch (tipo) {
+      case "farmacia":
+        return { icon: "💊", color: "#4CAF50" };
+      case "banco":
+        return { icon: "💰", color: "#2196F3" };
+      default:
+        return { icon: "📦", color: "#000" };
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -50,6 +67,11 @@ export default function App() {
     );
   }
 
+  const cerrarModal = () => {
+    setModalVisible(false);
+    setSelectedMandado(null);
+  };
+
   return (
     <>
       <MapView
@@ -68,10 +90,60 @@ export default function App() {
               latitude: m.lat,
               longitude: m.lng,
             }}
-            title={m.descripcion}
-          />
+            onPress={() => {
+              setSelectedMandado(m);
+              setModalVisible(true);
+            }}
+          >
+            <View
+              style={[
+                styles.marker,
+                {
+                  backgroundColor:
+                    selectedMandado?.id === m.id
+                      ? "#000"
+                      : getMandadoStyle(m.tipo).color,
+                },
+              ]}
+            >
+              <Text style={styles.markerText}>
+                {getMandadoStyle(m.tipo).icon}
+              </Text>
+            </View>
+          </Marker>
         ))}
       </MapView>
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => cerrarModal}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={cerrarModal} />
+
+          <View style={styles.modalContent}>
+            <Text style={styles.title}>Detalle del mandado</Text>
+
+            <Text>{selectedMandado?.descripcion}</Text>
+            <Text>📞 {selectedMandado?.telefono}</Text>
+
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={styles.accept}
+                onPress={() => {
+                  alert("Mandado aceptado");
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                  Aceptar mandado
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -97,5 +169,50 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  reject: {
+    backgroundColor: "red",
+    padding: 12,
+    borderRadius: 10,
+    flex: 1,
+    marginRight: 10,
+    alignItems: "center",
+  },
+  actions: {
+    marginTop: 20,
+  },
+  accept: {
+    backgroundColor: "#22C55E",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  marker: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  markerText: {
+    fontSize: 18,
   },
 });
