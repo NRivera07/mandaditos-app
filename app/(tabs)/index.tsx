@@ -117,7 +117,7 @@ export default function App() {
         visible={modalVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => cerrarModal}
+        onRequestClose={cerrarModal}
       >
         <View style={styles.modalContainer}>
           <TouchableOpacity style={{ flex: 1 }} onPress={cerrarModal} />
