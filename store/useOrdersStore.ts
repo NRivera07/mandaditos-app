@@ -8,6 +8,7 @@ type Mandado = {
   lat: number;
   lng: number;
   phone: number;
+  customerName: string;
 };
 
 type Store = {
@@ -25,6 +26,7 @@ export const useOrdersStore = create<Store>((set) => ({
       phone: 57574464,
       lat: 12.104510189318631,
       lng: -85.37116033485523,
+      customerName: "Juan Perez",
     },
     {
       id: "2",
@@ -34,6 +36,7 @@ export const useOrdersStore = create<Store>((set) => ({
       phone: 57574464,
       lat: 12.1072922641739,
       lng: -85.37033454465575,
+      customerName: "Maria Lopez",
     },
   ],
 

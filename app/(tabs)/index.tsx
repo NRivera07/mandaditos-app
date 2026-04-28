@@ -45,6 +45,11 @@ export default function App() {
     Linking.openURL(url);
   };
 
+  const viewRoute = (lat: number, lng: number) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    Linking.openURL(url);
+  };
+
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -126,11 +131,16 @@ export default function App() {
           <View style={styles.modalContent}>
             <Text style={styles.title}>📝 Detalle del mandado</Text>
 
-            <Text style={{fontWeight: "500"}}>📌 {selectedMandado?.description}</Text>
-            <Text>📞 Telefono: {selectedMandado?.phone}</Text>
-            <View style={{ flexDirection: "row", marginTop: 15 }}>
+            <Text style={{ fontWeight: "500" }}>
+              📌 {selectedMandado?.description}
+            </Text>
+            <View style={{ flexDirection: "row", gap: 5 }}>
+              <Text>👤 Cliente: {selectedMandado?.customerName}</Text>
+              <Text>📞 Teléfono: {selectedMandado?.phone}</Text>
+            </View>
+            <View style={{ flexDirection: "row", marginTop: 15, gap: 10 }}>
               <TouchableOpacity
-                style={[styles.whatsappButton, { flex: 1, marginRight: 5 }]}
+                style={[styles.whatsappButton, { flex: 1 }]}
                 onPress={() => {
                   if (!selectedMandado?.phone) return;
                   openWhatsApp(selectedMandado.phone);
@@ -140,13 +150,23 @@ export default function App() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.callButton, { flex: 1, marginLeft: 5 }]}
+                style={[styles.callButton, { flex: 1 }]}
                 onPress={() => {
                   if (!selectedMandado?.phone) return;
                   callPhone(selectedMandado.phone);
                 }}
               >
                 <Ionicons name="call" size={20} color="#fff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.routeButton, { flex: 1 }]}
+                onPress={() => {
+                  if (!selectedMandado?.lat || !selectedMandado?.lng) return;
+                  viewRoute(selectedMandado.lat, selectedMandado.lng);
+                }}
+              >
+                <Ionicons name="navigate" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
 
@@ -238,9 +258,6 @@ const styles = StyleSheet.create({
   markerText: {
     fontSize: 18,
   },
-  whatsappContainer: {
-    marginTop: 15,
-  },
 
   whatsappButton: {
     flexDirection: "row",
@@ -250,12 +267,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
   },
-
-  whatsappText: {
-    color: "#fff",
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
   callButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -264,10 +275,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
   },
-
-  callText: {
-    color: "#fff",
-    fontWeight: "bold",
-    marginLeft: 8,
+  routeButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#111827",
+    padding: 12,
+    borderRadius: 10,
+    justifyContent: "center",
   },
 });
