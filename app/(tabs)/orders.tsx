@@ -1,26 +1,8 @@
+import { useOrdersStore } from "@/store/useOrdersStore";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function Orders() {
-  const pedidos = [
-    {
-      id: "1",
-      descripcion: "Comprar medicina",
-      tipo: "farmacia",
-      estado: "Pendiente",
-    },
-    {
-      id: "2",
-      descripcion: "Ir al banco",
-      tipo: "banco",
-      estado: "En curso",
-    },
-    {
-      id: "3",
-      descripcion: "Entrega de paquete",
-      tipo: "otro",
-      estado: "Completado",
-    },
-  ];
+  const orders = useOrdersStore((state) => state.mandados);
 
   const getIcon = (tipo: string) => {
     switch (tipo) {
@@ -66,7 +48,7 @@ export default function Orders() {
       <Text style={styles.title}>Mis pedidos</Text>
 
       <FlatList
-        data={pedidos}
+        data={orders}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 20 }}

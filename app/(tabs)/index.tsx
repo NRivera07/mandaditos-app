@@ -1,6 +1,15 @@
+import { useOrdersStore } from "@/store/useOrdersStore";
+import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Linking,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
 type LocationCoords = {
@@ -8,32 +17,12 @@ type LocationCoords = {
   longitude: number;
 };
 export default function App() {
+  const { mandados, aceptarMandado } = useOrdersStore();
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined
   );
   const [selectedMandado, setSelectedMandado] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
-
-  const mandados = location
-    ? [
-        {
-          id: "1",
-          descripcion: "Comprar medicina",
-          telefono: "8888-8888",
-          tipo: "farmacia",
-          lat: location.latitude + 0.002,
-          lng: location.longitude + 0.002,
-        },
-        {
-          id: "2",
-          descripcion: "Ir al banco",
-          telefono: "7777-7777",
-          tipo: "banco",
-          lat: location.latitude - 0.002,
-          lng: location.longitude - 0.001,
-        },
-      ]
-    : [];
 
   const getMandadoStyle = (tipo: string) => {
     switch (tipo) {
@@ -44,6 +33,16 @@ export default function App() {
       default:
         return { icon: "📦", color: "#000" };
     }
+  };
+
+  const openWhatsApp = (phone: string) => {
+    const url = `https://wa.me/+505${phone}`;
+    Linking.openURL(url);
+  };
+
+  const callPhone = (phone: string) => {
+    const url = `tel:${phone}`;
+    Linking.openURL(url);
   };
 
   useEffect(() => {
@@ -83,35 +82,37 @@ export default function App() {
           longitudeDelta: 0.01,
         }}
       >
-        {mandados.map((m) => (
-          <Marker
-            key={m.id}
-            coordinate={{
-              latitude: m.lat,
-              longitude: m.lng,
-            }}
-            onPress={() => {
-              setSelectedMandado(m);
-              setModalVisible(true);
-            }}
-          >
-            <View
-              style={[
-                styles.marker,
-                {
-                  backgroundColor:
-                    selectedMandado?.id === m.id
-                      ? "#000"
-                      : getMandadoStyle(m.tipo).color,
-                },
-              ]}
+        {mandados
+          .filter((m) => m.estado === "Pendiente")
+          .map((m) => (
+            <Marker
+              key={m.id}
+              coordinate={{
+                latitude: m.lat,
+                longitude: m.lng,
+              }}
+              onPress={() => {
+                setSelectedMandado(m);
+                setModalVisible(true);
+              }}
             >
-              <Text style={styles.markerText}>
-                {getMandadoStyle(m.tipo).icon}
-              </Text>
-            </View>
-          </Marker>
-        ))}
+              <View
+                style={[
+                  styles.marker,
+                  {
+                    backgroundColor:
+                      selectedMandado?.id === m.id
+                        ? "#000"
+                        : getMandadoStyle(m.tipo).color,
+                  },
+                ]}
+              >
+                <Text style={styles.markerText}>
+                  {getMandadoStyle(m.tipo).icon}
+                </Text>
+              </View>
+            </Marker>
+          ))}
       </MapView>
       <Modal
         visible={modalVisible}
@@ -123,16 +124,38 @@ export default function App() {
           <TouchableOpacity style={{ flex: 1 }} onPress={cerrarModal} />
 
           <View style={styles.modalContent}>
-            <Text style={styles.title}>Detalle del mandado</Text>
+            <Text style={styles.title}>📝 Detalle del mandado</Text>
 
-            <Text>{selectedMandado?.descripcion}</Text>
-            <Text>📞 {selectedMandado?.telefono}</Text>
+            <Text style={{fontWeight: "500"}}>📌 {selectedMandado?.description}</Text>
+            <Text>📞 Telefono: {selectedMandado?.phone}</Text>
+            <View style={{ flexDirection: "row", marginTop: 15 }}>
+              <TouchableOpacity
+                style={[styles.whatsappButton, { flex: 1, marginRight: 5 }]}
+                onPress={() => {
+                  if (!selectedMandado?.phone) return;
+                  openWhatsApp(selectedMandado.phone);
+                }}
+              >
+                <Ionicons name="logo-whatsapp" size={20} color="#fff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.callButton, { flex: 1, marginLeft: 5 }]}
+                onPress={() => {
+                  if (!selectedMandado?.phone) return;
+                  callPhone(selectedMandado.phone);
+                }}
+              >
+                <Ionicons name="call" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.actions}>
               <TouchableOpacity
                 style={styles.accept}
                 onPress={() => {
-                  alert("Mandado aceptado");
+                  if (!selectedMandado) return;
+                  aceptarMandado(selectedMandado.id);
                   cerrarModal();
                 }}
               >
@@ -214,5 +237,37 @@ const styles = StyleSheet.create({
   },
   markerText: {
     fontSize: 18,
+  },
+  whatsappContainer: {
+    marginTop: 15,
+  },
+
+  whatsappButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#25D366",
+    padding: 12,
+    borderRadius: 10,
+    justifyContent: "center",
+  },
+
+  whatsappText: {
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
+  callButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#3B82F6",
+    padding: 12,
+    borderRadius: 10,
+    justifyContent: "center",
+  },
+
+  callText: {
+    color: "#fff",
+    fontWeight: "bold",
+    marginLeft: 8,
   },
 });
