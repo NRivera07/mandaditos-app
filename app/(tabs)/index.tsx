@@ -17,7 +17,7 @@ type LocationCoords = {
   longitude: number;
 };
 export default function App() {
-  const { mandados, aceptarMandado } = useOrdersStore();
+  const { orders, aceptarMandado } = useOrdersStore();
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined
   );
@@ -87,8 +87,8 @@ export default function App() {
           longitudeDelta: 0.01,
         }}
       >
-        {mandados
-          .filter((m) => m.estado === "Pendiente")
+        {orders
+          .filter((m) => m.status === "Pendiente")
           .map((m) => (
             <Marker
               key={m.id}

@@ -1,8 +1,14 @@
 import { useOrdersStore } from "@/store/useOrdersStore";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Orders() {
-  const orders = useOrdersStore((state) => state.mandados);
+  const { orders, updateStatus } = useOrdersStore();
 
   const getIcon = (tipo: string) => {
     switch (tipo) {
@@ -15,8 +21,8 @@ export default function Orders() {
     }
   };
 
-  const getEstadoStyle = (estado: string) => {
-    switch (estado) {
+  const getEstadoStyle = (status: string) => {
+    switch (status) {
       case "Pendiente":
         return { color: "#F59E0B" };
       case "En curso":
@@ -28,6 +34,14 @@ export default function Orders() {
     }
   };
 
+  const buttonStyleStatus = [
+    {
+      Pendiente: { backgroundColor: "#F59E0B", text: "Iniciar" },
+      "En curso": { backgroundColor: "#22C55E", text: "Completar" },
+      Completado: { backgroundColor: "#6B7280", text: "Completado" },
+    },
+  ];
+
   const renderItem = ({ item }: any) => (
     <View style={styles.card}>
       <View style={styles.iconContainer}>
@@ -35,10 +49,46 @@ export default function Orders() {
       </View>
 
       <View style={{ flex: 1 }}>
-        <Text style={styles.descripcion}>{item.descripcion}</Text>
-        <Text style={[styles.estado, getEstadoStyle(item.estado)]}>
-          {item.estado}
+        <Text style={styles.descripcion}>{item.description}</Text>
+        <Text style={[styles.status, getEstadoStyle(item.status)]}>
+          {item.status}
         </Text>
+      </View>
+      <View style={{ flexDirection: "row", marginTop: 10, gap: 8 }}>
+        {buttonStyleStatus[0][
+          item.status as keyof (typeof buttonStyleStatus)[0]
+        ] && (
+          <TouchableOpacity
+            style={[
+              styles.smallButton,
+              {
+                backgroundColor:
+                  buttonStyleStatus[0][
+                    item.status as keyof (typeof buttonStyleStatus)[0]
+                  ].backgroundColor,
+              },
+            ]}
+            disabled={item.status === "Completado"}
+            onPress={() =>
+              updateStatus(
+                item.id,
+                item.status === "Pendiente"
+                  ? "En curso"
+                  : item.status === "En curso"
+                  ? "Completado"
+                  : item.status
+              )
+            }
+          >
+            <Text style={styles.smallButtonText}>
+              {
+                buttonStyleStatus[0][
+                  item.status as keyof (typeof buttonStyleStatus)[0]
+                ].text
+              }
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -98,9 +148,28 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#111827",
   },
-  estado: {
+  status: {
     fontSize: 13,
     marginTop: 4,
     fontWeight: "500",
+  },
+  smallButton: {
+    backgroundColor: "#22C55E",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+
+  smallButtonAlt: {
+    backgroundColor: "#3B82F6",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+
+  smallButtonText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

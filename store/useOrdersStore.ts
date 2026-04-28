@@ -1,10 +1,12 @@
 import { create } from "zustand";
 
-type Mandado = {
+type StatusOrder = "Pendiente" | "En curso" | "Completado";
+
+type Order = {
   id: string;
   description: string;
   tipo: string;
-  estado: "Pendiente" | "En curso" | "Completado";
+  status: StatusOrder;
   lat: number;
   lng: number;
   phone: number;
@@ -12,17 +14,18 @@ type Mandado = {
 };
 
 type Store = {
-  mandados: Mandado[];
+  orders: Order[];
   aceptarMandado: (id: string) => void;
+  updateStatus: (id: string, status: StatusOrder) => void;
 };
 
 export const useOrdersStore = create<Store>((set) => ({
-  mandados: [
+  orders: [
     {
       id: "1",
       description: "Comprar medicina",
       tipo: "farmacia",
-      estado: "Pendiente",
+      status: "Pendiente",
       phone: 57574464,
       lat: 12.104510189318631,
       lng: -85.37116033485523,
@@ -32,7 +35,7 @@ export const useOrdersStore = create<Store>((set) => ({
       id: "2",
       description: "Ir al banco",
       tipo: "banco",
-      estado: "Pendiente",
+      status: "Pendiente",
       phone: 57574464,
       lat: 12.1072922641739,
       lng: -85.37033454465575,
@@ -42,8 +45,13 @@ export const useOrdersStore = create<Store>((set) => ({
 
   aceptarMandado: (id) =>
     set((state) => ({
-      mandados: state.mandados.map((m) =>
+      orders: state.orders.map((m) =>
         m.id === id ? { ...m, estado: "En curso" } : m
       ),
+    })),
+
+  updateStatus: (id: string, status: StatusOrder) =>
+    set((state) => ({
+      orders: state.orders.map((m) => (m.id === id ? { ...m, status } : m)),
     })),
 }));
