@@ -133,7 +133,7 @@ export default function App() {
                 style={styles.accept}
                 onPress={() => {
                   alert("Mandado aceptado");
-                  setModalVisible(false);
+                  cerrarModal();
                 }}
               >
                 <Text style={{ color: "#fff", fontWeight: "bold" }}>
