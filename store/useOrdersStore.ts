@@ -46,7 +46,7 @@ export const useOrdersStore = create<Store>((set) => ({
   aceptarMandado: (id) =>
     set((state) => ({
       orders: state.orders.map((m) =>
-        m.id === id ? { ...m, estado: "En curso" } : m
+        m.id === id ? { ...m, status: "En curso" } : m
       ),
     })),
 
