@@ -1,7 +1,10 @@
+import { db } from "@/firebase";
 import { useTheme } from "@/hooks/use-theme-color";
 import { useAuthStore } from "@/store/useAuthStore";
+import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
@@ -10,20 +13,52 @@ import {
   View,
 } from "react-native";
 
+type User = {
+  id: string;
+  name: string;
+  phone: string;
+  role: "delivery" | "customer";
+  status?: string;
+  rating?: number;
+};
+
 export default function Login() {
   const { login } = useAuthStore((state) => state);
   const theme = useTheme();
 
   const [phone, setPhone] = useState("");
-
-  const handleLogin = () => {
+  const [loading, setLoading] = useState(false);
+  const handleLogin = async () => {
     if (!phone) return alert("Ingresa tu teléfono");
 
-    login({
-      name: "Usuario",
-      phone,
-      role: "delivery",
-    });
+    setLoading(true);
+    try {
+      const userRef = doc(db, "users", phone);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        setLoading(false);
+        return alert("Usuario no encontrado");
+      }
+
+      const data = userSnap.data();
+
+      const userData: User = {
+        id: phone,
+        name: data.name,
+        phone: data.phone,
+        role: data.role,
+        status: data.status,
+        rating: data.rating,
+      };
+
+      login(userData);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      alert("Error al iniciar sesión");
+    }
   };
 
   return (
@@ -51,8 +86,13 @@ export default function Login() {
       <TouchableOpacity
         style={[styles.button, { backgroundColor: theme.accent }]}
         onPress={handleLogin}
+        disabled={loading}
       >
-        <Text style={styles.buttonText}>Entrar</Text>
+        {loading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <Text style={styles.buttonText}>Entrar</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
