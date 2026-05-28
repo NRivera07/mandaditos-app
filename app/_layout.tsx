@@ -20,7 +20,7 @@ export default function RootLayout() {
     } else if (user.role === "delivery") {
       router.replace("/(tabs)/(delivery)/map");
     } else {
-      router.replace("/(tabs)/(customer)/home");
+      router.replace("/(tabs)/(customer)/map");
     }
   }, [user, isReady]);
 

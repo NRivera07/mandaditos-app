@@ -16,10 +16,10 @@ type LocationCoords = {
   latitude: number;
   longitude: number;
 };
-export default function App() {
+export default function Map() {
   const { orders, aceptarMandado } = useOrdersStore();
   const [location, setLocation] = useState<LocationCoords | undefined>(
-    undefined
+    undefined,
   );
   const [selectedMandado, setSelectedMandado] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
