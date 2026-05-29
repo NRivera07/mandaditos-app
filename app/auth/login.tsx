@@ -28,8 +28,13 @@ export default function Login() {
 
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const handleLogin = async () => {
-    if (!phone) return alert("Ingresa tu teléfono");
+    if (!phone) {
+      setError("Ingresa tu teléfono");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -38,8 +43,10 @@ export default function Login() {
 
       if (!userSnap.exists()) {
         setLoading(false);
-        return alert("Usuario no encontrado");
+        setError("Usuario no encontrado");
+        return;
       }
+      setError("");
 
       const data = userSnap.data();
 
@@ -82,6 +89,11 @@ export default function Login() {
         keyboardType="phone-pad"
         maxLength={8}
       />
+      {error && (
+        <Text style={{ color: "red", marginTop: 5, fontWeight: "500" }}>
+          {error}
+        </Text>
+      )}
 
       <TouchableOpacity
         style={[styles.button, { backgroundColor: theme.accent }]}
@@ -133,7 +145,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 14,
     borderRadius: 12,
-    marginBottom: 20,
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
@@ -142,6 +153,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
+    marginTop: 20,
   },
 
   buttonText: {
