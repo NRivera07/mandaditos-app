@@ -1,3 +1,4 @@
+import { useTheme } from "@/hooks/use-theme-color";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import {
@@ -17,6 +18,7 @@ type LocationCoords = {
 };
 
 export default function Map() {
+  const theme = useTheme();
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined,
   );
@@ -84,10 +86,12 @@ export default function Map() {
           <View style={styles.overlay}>
             <TouchableWithoutFeedback>
               <View style={styles.modal}>
-                <Text style={styles.title}>Nuevo mandado</Text>
+                <Text style={{ ...styles.title, color: theme.text }}>
+                  ¿Qué necesitas?
+                </Text>
 
                 <TextInput
-                  placeholder="¿Qué necesitas? Agrega la información que quieras que el mandadito sepa."
+                  placeholder="Agrega la información que quieras que el mandadito sepa."
                   placeholderTextColor="#9CA3AF"
                   value={mandado}
                   onChangeText={setMandado}
@@ -99,7 +103,9 @@ export default function Map() {
                   style={styles.button}
                   onPress={handleCreateOrder}
                 >
-                  <Text style={styles.buttonText}>Crear mandado</Text>
+                  <Text style={{ ...styles.buttonText, color: theme.text }}>
+                    Solicitar mandado
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleCloseModal}>
@@ -156,7 +162,6 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#001F2D",
     fontWeight: "700",
     fontSize: 16,
   },

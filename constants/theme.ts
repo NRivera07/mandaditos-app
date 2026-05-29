@@ -1,10 +1,9 @@
-
-const primary = "#001F2D"; // azul oscuro
-const accent = "#91CB6F"; // verde
+const primary = "#0C2333";
+const accent = "#76B847";
 
 export const Colors = {
   light: {
-    text: "#111827",
+    text: primary,
     background: "#F9FAFB",
     card: "#FFFFFF",
     border: "#E5E7EB",

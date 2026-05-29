@@ -75,22 +75,31 @@ export default function Login() {
         style={styles.logo}
         resizeMode="contain"
       />
-      <Text style={styles.subtitle}>¡Ingrese su número telefónico!</Text>
+      <Text style={{ ...styles.subtitle, color: theme.text }}>
+        ¡Ingrese su número telefónico!
+      </Text>
 
       <TextInput
         placeholder="Teléfono"
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={error ? "red" : "#9CA3AF"}
         value={phone}
         onChangeText={(text) => {
           const onlyNumbers = text.replace(/[^0-9]/g, "");
           setPhone(onlyNumbers);
         }}
-        style={styles.input}
+        style={error ? { ...styles.input, borderColor: "red" } : styles.input}
         keyboardType="phone-pad"
         maxLength={8}
       />
       {error && (
-        <Text style={{ color: "red", marginTop: 5, fontWeight: "500" }}>
+        <Text
+          style={{
+            color: "red",
+            marginTop: 5,
+            marginLeft: 10,
+            fontWeight: "500",
+          }}
+        >
           {error}
         </Text>
       )}
@@ -101,9 +110,11 @@ export default function Login() {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color="#000" />
+          <ActivityIndicator color={theme.primary} />
         ) : (
-          <Text style={styles.buttonText}>Entrar</Text>
+          <Text style={{ ...styles.buttonText, color: theme.text }}>
+            Entrar
+          </Text>
         )}
       </TouchableOpacity>
     </View>

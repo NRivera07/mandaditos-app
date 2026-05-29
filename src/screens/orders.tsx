@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/store/useAuthStore";
 import { useOrdersStore } from "@/store/useOrdersStore";
 import {
   FlatList,
@@ -9,6 +10,7 @@ import {
 
 export default function Orders() {
   const { orders, updateStatus } = useOrdersStore();
+  const { user } = useAuthStore();
 
   const getIcon = (tipo: string) => {
     switch (tipo) {
@@ -57,46 +59,45 @@ export default function Orders() {
       <View style={{ flexDirection: "row", marginTop: 10, gap: 8 }}>
         {buttonStyleStatus[0][
           item.status as keyof (typeof buttonStyleStatus)[0]
-        ] && (
-          <TouchableOpacity
-            style={[
-              styles.smallButton,
-              {
-                backgroundColor:
+        ] &&
+          user?.role === "delivery" && (
+            <TouchableOpacity
+              style={[
+                styles.smallButton,
+                {
+                  backgroundColor:
+                    buttonStyleStatus[0][
+                      item.status as keyof (typeof buttonStyleStatus)[0]
+                    ].backgroundColor,
+                },
+              ]}
+              disabled={item.status === "Completado"}
+              onPress={() =>
+                updateStatus(
+                  item.id,
+                  item.status === "Pendiente"
+                    ? "En curso"
+                    : item.status === "En curso"
+                      ? "Completado"
+                      : item.status,
+                )
+              }
+            >
+              <Text style={styles.smallButtonText}>
+                {
                   buttonStyleStatus[0][
                     item.status as keyof (typeof buttonStyleStatus)[0]
-                  ].backgroundColor,
-              },
-            ]}
-            disabled={item.status === "Completado"}
-            onPress={() =>
-              updateStatus(
-                item.id,
-                item.status === "Pendiente"
-                  ? "En curso"
-                  : item.status === "En curso"
-                  ? "Completado"
-                  : item.status
-              )
-            }
-          >
-            <Text style={styles.smallButtonText}>
-              {
-                buttonStyleStatus[0][
-                  item.status as keyof (typeof buttonStyleStatus)[0]
-                ].text
-              }
-            </Text>
-          </TouchableOpacity>
-        )}
+                  ].text
+                }
+              </Text>
+            </TouchableOpacity>
+          )}
       </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Mis pedidos</Text>
-
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id}

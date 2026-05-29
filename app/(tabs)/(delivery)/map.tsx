@@ -1,3 +1,4 @@
+import { useTheme } from "@/hooks/use-theme-color";
 import { useOrdersStore } from "@/store/useOrdersStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
@@ -17,6 +18,8 @@ type LocationCoords = {
   longitude: number;
 };
 export default function Map() {
+  const theme = useTheme();
+
   const { orders, aceptarMandado } = useOrdersStore();
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined,
@@ -66,7 +69,7 @@ export default function Map() {
   if (!location) {
     return (
       <View style={styles.center}>
-        <Text>Obteniendo ubicación...</Text>
+        <Text style={{ color: theme.text }}>Obteniendo ubicación...</Text>
       </View>
     );
   }
@@ -129,7 +132,9 @@ export default function Map() {
           <TouchableOpacity style={{ flex: 1 }} onPress={cerrarModal} />
 
           <View style={styles.modalContent}>
-            <Text style={styles.title}>📝 Detalle del mandado</Text>
+            <Text style={{ ...styles.title, color: theme.text }}>
+              📝 Detalle del mandado
+            </Text>
 
             <Text style={{ fontWeight: "500" }}>
               📌 {selectedMandado?.description}
@@ -172,14 +177,14 @@ export default function Map() {
 
             <View style={styles.actions}>
               <TouchableOpacity
-                style={styles.accept}
+                style={{ ...styles.accept, backgroundColor: theme.accent }}
                 onPress={() => {
                   if (!selectedMandado) return;
                   aceptarMandado(selectedMandado.id);
                   cerrarModal();
                 }}
               >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                <Text style={{ color: theme.text, fontWeight: "bold" }}>
                   Aceptar mandado
                 </Text>
               </TouchableOpacity>
@@ -241,7 +246,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   accept: {
-    backgroundColor: "#22C55E",
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
