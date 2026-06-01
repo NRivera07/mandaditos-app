@@ -1,4 +1,5 @@
 import { useAuthStore } from "@/store/useAuthStore";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
@@ -7,8 +8,9 @@ export default function RootLayout() {
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
 
+  const queryClient = new QueryClient();
+
   useEffect(() => {
-    // pequeño delay para asegurar hidratación
     setIsReady(true);
   }, []);
 
@@ -24,5 +26,11 @@ export default function RootLayout() {
     }
   }, [user, isReady]);
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <>
+      <QueryClientProvider client={queryClient}>
+        <Stack screenOptions={{ headerShown: false }} />
+      </QueryClientProvider>
+    </>
+  );
 }

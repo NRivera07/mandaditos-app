@@ -1,4 +1,5 @@
 import { useTheme } from "@/hooks/use-theme-color";
+import { useCategories } from "@/src/hooks/useCategories";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
 import {
@@ -22,6 +23,9 @@ export default function Map() {
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined,
   );
+  const { data: categories = [], isLoading } = useCategories();
+
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -35,12 +39,16 @@ export default function Map() {
   };
 
   const handleCreateOrder = () => {
+    if (!selectedCategory) {
+      return alert("Selecciona una categoría");
+    }
+
     console.log({
-      mandado,
-      location: location,
+      categoryId: selectedCategory,
+      description: mandado,
+      location,
     });
 
-    setMandado("");
     handleCloseModal();
   };
 
@@ -60,6 +68,7 @@ export default function Map() {
   const handleCloseModal = () => {
     setModalVisible(false);
     setMandado("");
+    setSelectedCategory("");
   };
 
   if (!location) {
@@ -89,7 +98,39 @@ export default function Map() {
                 <Text style={{ ...styles.title, color: theme.text }}>
                   ¿Qué necesitas?
                 </Text>
+                <Text style={styles.categoryTitle}>Tipo de mandado</Text>
 
+                {isLoading ? (
+                  <Text>Cargando categorías...</Text>
+                ) : (
+                  <View style={styles.categories}>
+                    {categories.map((category) => (
+                      <TouchableOpacity
+                        key={category.id}
+                        style={[
+                          styles.category,
+                          selectedCategory === category.id && {
+                            borderColor: category.color,
+                            borderWidth: 2,
+                          },
+                        ]}
+                        onPress={() => setSelectedCategory(category.id)}
+                      >
+                        <Text style={styles.categoryIcon}>{category.icon}</Text>
+
+                        <Text
+                          style={{
+                            color: theme.text,
+                            fontWeight:
+                              selectedCategory === category.id ? "700" : "500",
+                          }}
+                        >
+                          {category.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
                 <TextInput
                   placeholder="Agrega la información que quieras que el mandadito sepa."
                   placeholderTextColor="#9CA3AF"
@@ -170,5 +211,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 15,
     color: "#6B7280",
+  },
+  categoryTitle: {
+    fontSize: 14,
+    color: "#64748B",
+    marginBottom: 10,
+  },
+
+  categories: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginBottom: 15,
+  },
+
+  category: {
+    width: "48%",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+
+  categoryIcon: {
+    fontSize: 24,
+    marginBottom: 4,
   },
 });
