@@ -30,6 +30,8 @@ export default function Map() {
   const [modalVisible, setModalVisible] = useState(false);
 
   const [mandado, setMandado] = useState("");
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleMapPress = (event: MapPressEvent) => {
     const coords = event.nativeEvent.coordinate;
@@ -38,9 +40,22 @@ export default function Map() {
     setModalVisible(true);
   };
 
+  const showError = (message: string) => {
+    setErrorMessage(message);
+    setErrorModalVisible(true);
+  };
+
   const handleCreateOrder = () => {
     if (!selectedCategory) {
-      return alert("Selecciona una categoría");
+      return showError("Debes seleccionar una categoría.");
+    }
+
+    if (!mandado.trim()) {
+      return showError("Debes agregar una descripción del mandado.");
+    }
+
+    if (mandado.trim().length < 10) {
+      return showError("La descripción debe tener al menos 10 caracteres.");
     }
 
     console.log({
@@ -51,6 +66,17 @@ export default function Map() {
 
     handleCloseModal();
   };
+
+  useEffect(() => {
+    if (errorModalVisible) {
+      const timer = setTimeout(() => {
+        setErrorModalVisible(false);
+        setErrorMessage("");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [errorModalVisible]);
 
   useEffect(() => {
     (async () => {
@@ -140,6 +166,11 @@ export default function Map() {
                   multiline
                 />
 
+                {errorModalVisible && (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                  </View>
+                )}
                 <TouchableOpacity
                   style={styles.button}
                   onPress={handleCreateOrder}
@@ -237,5 +268,19 @@ const styles = StyleSheet.create({
   categoryIcon: {
     fontSize: 24,
     marginBottom: 4,
+  },
+  errorContainer: {
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 15,
+  },
+
+  errorText: {
+    color: "#DC2626",
+    textAlign: "center",
+    fontWeight: "500",
   },
 });
