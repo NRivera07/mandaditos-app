@@ -1,8 +1,10 @@
 import { useTheme } from "@/hooks/use-theme-color";
 import { useCategories } from "@/src/hooks/useCategories";
+import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  Dimensions,
   Modal,
   StyleSheet,
   Text,
@@ -11,6 +13,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import MapView, { MapPressEvent, Marker } from "react-native-maps";
 
 type LocationCoords = {
@@ -20,6 +23,11 @@ type LocationCoords = {
 
 export default function Map() {
   const theme = useTheme();
+  const mapRef = useRef<MapView>(null);
+  const placesRef = useRef<any>(null);
+  const [searchText, setSearchText] = useState("");
+  const [placesKey, setPlacesKey] = useState(0);
+
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined,
   );
@@ -32,6 +40,7 @@ export default function Map() {
   const [mandado, setMandado] = useState("");
   const [errorModalVisible, setErrorModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const { width } = Dimensions.get("window");
 
   const handleMapPress = (event: MapPressEvent) => {
     const coords = event.nativeEvent.coordinate;
@@ -104,6 +113,7 @@ export default function Map() {
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         style={StyleSheet.absoluteFillObject}
         initialRegion={{
           latitude: location.latitude,
@@ -115,7 +125,109 @@ export default function Map() {
       >
         <Marker coordinate={location} />
       </MapView>
+      <View style={styles.searchContainer}>
+        <GooglePlacesAutocomplete
+          key={placesKey}
+          ref={placesRef}
+          placeholder="Buscar dirección..."
+          fetchDetails={true}
+          enablePoweredByContainer={false}
+          minLength={2}
+          debounce={300}
+          renderRow={(rowData) => (
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{
+                width: width - 70,
+                fontSize: 14,
+                color: "#0C2333",
+              }}
+            >
+              {rowData.description}
+            </Text>
+          )}
+          textInputProps={{
+            value: searchText,
+            onChangeText: setSearchText,
+            placeholderTextColor: "#94A3B8",
+          }}
+          query={{
+            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY!,
+            language: "es",
+          }}
+          onPress={(data, details) => {
+            const lat = details?.geometry.location.lat;
+            const lng = details?.geometry.location.lng;
 
+            if (lat == null || lng == null) return;
+
+            const destination = {
+              latitude: lat,
+              longitude: lng,
+            };
+
+            setLocation(destination);
+
+            mapRef.current?.animateToRegion(
+              {
+                ...destination,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              },
+              1000,
+            );
+          }}
+          onFail={(error) => {
+            console.log("GOOGLE PLACES ERROR:", error);
+          }}
+          styles={{
+            container: {
+              flex: 0,
+            },
+
+            textInputContainer: {
+              backgroundColor: "transparent",
+              borderTopWidth: 0,
+              borderBottomWidth: 0,
+            },
+
+            textInput: {
+              height: 50,
+              backgroundColor: "#FFF",
+              borderRadius: 14,
+              fontSize: 15,
+              color: "#0C2333",
+            },
+
+            listView: {
+              backgroundColor: "#FFF",
+              borderRadius: 14,
+              marginTop: 8,
+              elevation: 10,
+              zIndex: 9999,
+            },
+          }}
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              right: 14,
+              top: 13,
+              zIndex: 99999,
+            }}
+            onPress={() => {
+              setSearchText("");
+
+              placesRef.current?.setAddressText("");
+              setPlacesKey((prev) => prev + 1);
+            }}
+          >
+            <Ionicons name="close-circle" size={20} color="#94A3B8" />
+          </TouchableOpacity>
+        )}
+      </View>
       <Modal visible={modalVisible} animationType="slide" transparent>
         <TouchableWithoutFeedback onPress={handleCloseModal}>
           <View style={styles.overlay}>
@@ -282,5 +394,19 @@ const styles = StyleSheet.create({
     color: "#DC2626",
     textAlign: "center",
     fontWeight: "500",
+  },
+  searchContainer: {
+    position: "absolute",
+    top: 12,
+    left: 16,
+    right: 16,
+    zIndex: 9999,
+    elevation: 9999,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 15,
+    color: "#0C2333",
   },
 });
