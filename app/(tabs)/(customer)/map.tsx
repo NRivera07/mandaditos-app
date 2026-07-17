@@ -1,9 +1,12 @@
 import { useTheme } from "@/hooks/use-theme-color";
 import { useCategories } from "@/src/hooks/useCategories";
+import { useCreateOrder } from "@/src/hooks/useCreateOrder";
+import { useAuthStore } from "@/store/useAuthStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   Modal,
   StyleSheet,
@@ -28,11 +31,15 @@ export default function Map() {
   const [searchText, setSearchText] = useState("");
   const [placesKey, setPlacesKey] = useState(0);
   const [markerKey, setMarkerKey] = useState(0);
+  const [loadingCreateOrder, setLoadingCreateOrder] = useState(false);
+
+  const user = useAuthStore((state) => state.user);
 
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined,
   );
   const { data: categories = [], isLoading } = useCategories();
+  const { mutateAsync: createOrderMutation, isPending } = useCreateOrder();
 
   const [selectedCategory, setSelectedCategory] = useState("");
 
@@ -55,7 +62,7 @@ export default function Map() {
     setErrorModalVisible(true);
   };
 
-  const handleCreateOrder = () => {
+  const handleCreateOrder = async () => {
     if (!selectedCategory) {
       return showError("Debes seleccionar una categoría.");
     }
@@ -68,13 +75,22 @@ export default function Map() {
       return showError("La descripción debe tener al menos 10 caracteres.");
     }
 
-    console.log({
-      categoryId: selectedCategory,
-      description: mandado,
-      location,
-    });
+    setLoadingCreateOrder(true);
+    try {
+      await createOrderMutation({
+        customerName: user?.name || "",
+        customerId: user?.phone || "",
+        categoryId: selectedCategory,
+        description: mandado,
+        location,
+      });
 
-    handleCloseModal();
+      handleCloseModal();
+    } catch (error) {
+      console.log(error);
+    }
+
+    setLoadingCreateOrder(false);
   };
 
   useEffect(() => {
@@ -289,9 +305,13 @@ export default function Map() {
                   style={styles.button}
                   onPress={handleCreateOrder}
                 >
-                  <Text style={{ ...styles.buttonText, color: theme.text }}>
-                    Solicitar mandado
-                  </Text>
+                  {loadingCreateOrder ? (
+                    <ActivityIndicator color={theme.primary} />
+                  ) : (
+                    <Text style={{ ...styles.buttonText, color: theme.text }}>
+                      Solicitar mandado
+                    </Text>
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={handleCloseModal}>
