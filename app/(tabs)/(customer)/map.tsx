@@ -27,6 +27,7 @@ export default function Map() {
   const placesRef = useRef<any>(null);
   const [searchText, setSearchText] = useState("");
   const [placesKey, setPlacesKey] = useState(0);
+  const [markerKey, setMarkerKey] = useState(0);
 
   const [location, setLocation] = useState<LocationCoords | undefined>(
     undefined,
@@ -104,6 +105,7 @@ export default function Map() {
     setModalVisible(false);
     setMandado("");
     setSelectedCategory("");
+    setMarkerKey((k) => k + 1);
   };
 
   if (!location) {
@@ -123,7 +125,7 @@ export default function Map() {
         }}
         onPress={handleMapPress}
       >
-        <Marker coordinate={location} />
+        <Marker key={markerKey} coordinate={location} />
       </MapView>
       <View style={styles.searchContainer}>
         <GooglePlacesAutocomplete
