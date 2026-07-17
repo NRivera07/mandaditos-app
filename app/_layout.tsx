@@ -2,6 +2,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
   const user = useAuthStore((state) => state.user);
@@ -31,6 +32,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }} />
       </QueryClientProvider>
+      <Toast />
     </>
   );
 }
